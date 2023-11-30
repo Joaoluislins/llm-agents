@@ -14,7 +14,7 @@ st.write("""
 st.write("""
 Tackling trustworthy GenAI in the news domain through the usage of LangChain + Chain-of-Thought + Internet Search + RAG.
 
-- **Short story development**: Provide a short story and get a full news article.
+- **Short Story Journalist**: Provide a short story and get a full news article.
 - **Journalist Assistant (Internet Search)**: Your personal assistant that remembers previous interactions and generates a news article in a conversational manner, using web content to develop it's generations.
 - **Journalist Assistant (Your Documents)** Empower the Assistant with the ability to access custom documents, enabling it to provide news articles based on the referenced information.
 
