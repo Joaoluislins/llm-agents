@@ -20,7 +20,7 @@ import numpy as np
 import requests
 from bs4 import BeautifulSoup
 import torch.nn.functional as F
-from transformers import AutoTokenizer, AutoModel
+# from transformers import AutoTokenizer, AutoModel
 import http.client
 http.client._MAXHEADERS = 1000
 
