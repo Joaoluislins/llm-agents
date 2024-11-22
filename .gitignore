@@ -1,1 +1,17 @@
+all_books_HF_data_*.hf
+concatenate_1_10.
+.env
+local/data
+local/images_converted
+local/llama.cpp
+**/.env
+local/logs
+local/notebooks
+**/llama.log
+**/tmp*
+.streamlit
+secrets.toml
+config_server.json
 backup/
+
+
