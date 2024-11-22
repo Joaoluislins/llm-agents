@@ -241,11 +241,11 @@ class LLMNET:
         # search_query_raw = self.generate(messages_create_query,)
         # self.log_writer(f"RAW Query created: {search_query_raw}", 'general')
         # search_query = self.format_response(search_query_raw, format_type='drop_assistant')
-        self.log_writer(f"Formatted Query created: {search_query}", 'general')
+        # self.log_writer(f"Formatted Query created: {search_query}", 'general')
         
         # Search the web
         query_result = self.get_api_snippets_for_query(search_query)
-        self.log_writer(f"Retrieved information from the web: {query_result}", 'general')
+        # self.log_writer(f"Retrieved information from the web: {query_result}", 'general')
         
         # create dict with the sources information, keys are the website prefixes
         all_snippets = ''
@@ -292,7 +292,7 @@ class LLMNET:
         for key, value in scored_websites_dict.items():
             dict_sources[key]['credibility'] = value
             
-        self.log_writer(f"Dict Sources: {dict_sources}", 'general')
+        # self.log_writer(f"Dict Sources: {dict_sources}", 'general')
         
         
                 
@@ -390,7 +390,7 @@ class LLMNET:
                                 'content': msg['content']
                                 })
         messages.append(user_prompt)
-        self.log_writer(messages, log_type='messages_sent', generation_type=generation_type)
+        # self.log_writer(messages, log_type='messages_sent', generation_type=generation_type)
         
         return messages
 
@@ -514,7 +514,7 @@ class LLMNET:
         ### Generate router response
         ### build prompts to route between response or query for lookup operation
         router_response = self.prepare_and_generate(user, generation_type = 'router')
-        self.log_writer(f"Router decision: {router_response}\n\n", 'general')
+        # self.log_writer(f"Router decision: {router_response}\n\n", 'general')
 
         ### Analyze router decision and propagate next step
         # in the case of SEARCH action
@@ -525,16 +525,16 @@ class LLMNET:
             # Produce the response based on the query result and conversation
             # In this case, we give the retrieved items as context to the bot for it to generate a grounded response
             response = self.prepare_and_generate(user, generation_type = 'respond_query', query_result = all_snippets)
-            self.log_writer(f"Response generated through RAG: {response}\n\n", 'general') 
+            # self.log_writer(f"Response generated through RAG: {response}\n\n", 'general') 
 
         # In the case of simple chat
         else:
             response = self.prepare_and_generate(user, generation_type = 'chat')
-            self.log_writer(f"Response generated through normal chat: {response}\n\n", 'general')
+            # self.log_writer(f"Response generated through normal chat: {response}\n\n", 'general')
             
         # trying now to apply html styling through a model
         html_response = self.prepare_and_generate(response, generation_type='html_format')
-        self.log_writer(f"HTML Response: {html_response}\n\n", 'general')
+        # self.log_writer(f"HTML Response: {html_response}\n\n", 'general')
         
         # after html editing, we need to color code the sentences according to the source websites credibility
         if query_result:
@@ -545,7 +545,7 @@ class LLMNET:
             
             color_coded_response = self.prepare_and_generate(html_response + '\n' + f"{all_scores}", generation_type='color_code')
             response = color_coded_response
-            self.log_writer(f"Color coded response: {color_coded_response}", 'general')
+            # self.log_writer(f"Color coded response: {color_coded_response}", 'general')
             
         return response, query_result, dict_sources
     
@@ -584,7 +584,7 @@ class LLMNET:
             # similarities[source] = [[round(similarity, 2) for similarity in snippet_similarities] for snippet_similarities in similarities_per_source]
         # self.log_writer(f"rounded similarities: {similarities}", 'general')
         # max_indices_dict = {key: [(max(sublist), sublist.index(max(sublist))) for sublist in value] for key, value in similarities.items()}
-        self.log_writer(f"maximized similarities: {max_max_dict}", 'general')
+        # self.log_writer(f"maximized similarities: {max_max_dict}", 'general')
         # Store the index of the new max value
         return max_max_dict
 
@@ -701,7 +701,7 @@ class LLMNET:
     def sentence_wise_similarity_formatter(self, response, dict_sources):
         
         similarity_search = self.similarity_search3(response, dict_sources)
-        self.log_writer(f"Similarity Search: {similarity_search}\n\n", 'general')
+        # self.log_writer(f"Similarity Search: {similarity_search}\n\n", 'general')
         response_sentences = response.split('\n')
         formatted_response = ""
 
@@ -715,7 +715,7 @@ class LLMNET:
                 snippet_best_match = similarity_search[sentence_idx]['snippet']
                 # snippet_best_match = dict_sources[max_source]['snippets'][snippet_best_match_index]
                 
-                self.log_writer(f"max score: {similarity_score_best_match} -> sentence: {sentence}\n\nSnippet: {snippet_best_match}",'general')
+                # self.log_writer(f"max score: {similarity_score_best_match} -> sentence: {sentence}\n\nSnippet: {snippet_best_match}",'general')
                 sentence = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', sentence)
                 if similarity_score_best_match > 0.4:
                     formatted_response = self.format_response(sentence = sentence, formatted_response=formatted_response, format_type = 'format_html', dict_sources = dict_sources, max_source = max_source)
@@ -738,7 +738,7 @@ class LLMNET:
             with st.chat_message("assistant"):
 
                 # Log the user input
-                self.log_writer(f"User New Input: {user}\n\n", 'general')
+                # self.log_writer(f"User New Input: {user}\n\n", 'general')
                 # Generate the response
                 response, query_result, dict_sources = self.chatLlama3(user)
                 
@@ -748,7 +748,7 @@ class LLMNET:
                     st.markdown(response, unsafe_allow_html=True)
                 if query_result:
                     response = self.format_response(response, format_type='tool_tip', dict_sources=dict_sources)
-                    self.log_writer(f"Response after tooltip: {response}", 'general')
+                    # self.log_writer(f"Response after tooltip: {response}", 'general')
                     # response = self.sentence_wise_similarity_formatter(response, dict_sources)
                     # st.markdown(f"<ol>{response}</ol>", unsafe_allow_html=True)
                     st.markdown(response, unsafe_allow_html=True)
