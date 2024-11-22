@@ -6,6 +6,7 @@
 ### split response in two, one to apply the rag while referencing, big models can do this, and then another to apply css styling, can be a fast model.
 
 import os
+import streamlit as st
 os.environ['HF_HOME'] = st.secrets["CACHE_DIR"]
 # Type nvidia-smi in the terminal and choose two GPUs that is not being used, remember that we can only use 0,1,2,3,4
 cuda_llama = 0
@@ -24,7 +25,6 @@ import http.client
 http.client._MAXHEADERS = 1000
 
 import scripts.utils as utils
-import streamlit as st
 
 # import torch
 from huggingface_hub import login
