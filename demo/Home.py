@@ -15,7 +15,7 @@ st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
 
 st.header("AI Chatbot Research")
 st.write("""
-[![view source code ](https://img.shields.io/badge/GitHub%20Repository-gray?logo=github)](https://github.com/Joaoluislins/demo)
+[![view source code ](https://img.shields.io/badge/GitHub%20Repository-gray?logo=github)](https://github.com/Joaoluislins/llm-agents)
 ![Visitors](https://api.visitorbadge.io/api/visitors?path=https%3A%2F%2Fpages-news.streamlit.app//&label=Visitors&labelColor=%235d5d5d&countColor=%231e7ebf&style=flat)
 """)
 
