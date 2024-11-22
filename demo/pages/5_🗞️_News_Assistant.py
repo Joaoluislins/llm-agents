@@ -10,7 +10,6 @@ from dotenv import load_dotenv
 load_dotenv()
 # TODO: update the code so that the two agents speaks to one another properly and the UI is updated with the conversation
 
-
 # Page configs
 st.set_page_config(page_title="🗞️ News Assistant",
                 page_icon="🗞️",

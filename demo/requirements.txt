@@ -1,0 +1,10 @@
+streamlit
+pypdf
+sentence-transformers
+docarray
+huggingface-hub
+python-dotenv
+beautifulsoup4
+transformers
+groq
+pillow

@@ -6,12 +6,12 @@
 ### split response in two, one to apply the rag while referencing, big models can do this, and then another to apply css styling, can be a fast model.
 
 import os
-os.environ['HF_HOME'] = '/data1/demobot/hf'
+os.environ['HF_HOME'] = st.secrets["CACHE_DIR"]
 # Type nvidia-smi in the terminal and choose two GPUs that is not being used, remember that we can only use 0,1,2,3,4
 cuda_llama = 0
 cuda_llava = 4
 os.environ["CUDA_VISIBLE_DEVICES"] = f"{cuda_llama},{cuda_llava}"
-os.environ["TRANSFORMERS_CACHE"] = '/data1/demobot/hf'
+os.environ["TRANSFORMERS_CACHE"] = st.secrets["CACHE_DIR"]
 import uuid
 import re
 import json
@@ -30,7 +30,7 @@ import streamlit as st
 from huggingface_hub import login
 from sentence_transformers import SentenceTransformer
 # from sentence_transformers.quantization import quantize_embeddings,semantic_search_usearch
-from llama_cpp import Llama
+# from llama_cpp import Llama
 # from llama_cpp.llama_chat_format import Llama3VisionAlpha
 from groq import Groq
 
@@ -40,23 +40,23 @@ from PIL import Image
 from io import BytesIO
 import base64
 
-from dotenv import load_dotenv
-load_dotenv()
+# from dotenv import load_dotenv
+# load_dotenv()
 
 
 #login hf key to use llama models
-HF_TOKEN = os.getenv("HF_TOKEN")
-YOU_API_KEY = os.getenv("YOU_API_KEY")
-login(HF_TOKEN)
+# HF_TOKEN = os.getenv("HF_TOKEN")
+YOU_API_KEY = st.secrets["YOU_API_KEY"]
+# login(HF_TOKEN)
 
 # Page configs
 st.set_page_config(page_title="🌐 Internet Bot",
                 page_icon="💬",
                 layout='wide')
 
-DEMOBOT_HOME = os.getenv("DEMOBOT_HOME")
+
 # Loading CSS Style
-with open(os.path.join(DEMOBOT_HOME, "scripts/style.css"), "r") as f:
+with open(os.path.join(st.secrets["DEMO_PATH"], "scripts/style.css"), "r") as f:
     css = f.read()
 
 st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
@@ -70,70 +70,69 @@ class LLMNET:
         self.similarity_model_id = "all-mpnet-base-v2"
         self.similarity_model_id2 = "nvidia/NV-Embed-v2"
         self.embed_model_id = "mixedbread-ai/mxbai-embed-large-v1"
-        self.cache_dir = '/data1/demobot/hf'
-        self.cache_folder = '/data1/demobot/hf'
+        self.cache_dir = st.secrets["CACHE_DIR"]
+        self.cache_folder = st.secrets["CACHE_DIR"]
         self.generation_model = generation_model
-        self.log_writer('START', 'create_log')
+        # self.log_writer('START', 'create_log')
         
+    # def log_writer(self, messages, log_type , generation_type = None):
+    #     """
+    #     Args:
+    #         messages (list): messages to be logged
+    #         type (str): type of the generation request
+    #     """
         
-    def log_writer(self, messages, log_type , generation_type = None):
-        """
-        Args:
-            messages (list): messages to be logged
-            type (str): type of the generation request
-        """
-        
-        if log_type == 'create_log':
-            if not os.path.exists(f"{DEMOBOT_HOME}/logs/flow_conversation/"):
-                os.makedirs(f"{DEMOBOT_HOME}/logs/flow_conversation/")
+    #     if log_type == 'create_log':
+    #         if not os.path.exists(f"{DEMOBOT_HOME}/logs/flow_conversation/"):
+    #             os.makedirs(f"{DEMOBOT_HOME}/logs/flow_conversation/")
             
-            with open(f"{DEMOBOT_HOME}/logs/flow_conversation/{st.session_state.session_id}.txt", 'w') as file:
-                file.write(f"{messages}\n")
-                dashes = '-' * 20
-                file.write(f"{dashes}\n")
+    #         with open(f"{DEMOBOT_HOME}/logs/flow_conversation/{st.session_state.session_id}.txt", 'w') as file:
+    #             file.write(f"{messages}\n")
+    #             dashes = '-' * 20
+    #             file.write(f"{dashes}\n")
                 
-        if log_type == 'messages_sent':
-            with open(f"{DEMOBOT_HOME}/logs/flow_conversation/{st.session_state.session_id}.txt", 'a') as file:
-                file.write(f"\nMessages sent to '{generation_type}' generation:\n\n")
-                for msg in messages:
-                    file.write(f"+++{msg['role']}: {msg['content']}\n")
-                file.write(f"\n\n")
-                dashes = '-' * 20
-                file.write(f"{dashes}\n") 
+    #     if log_type == 'messages_sent':
+    #         with open(f"{DEMOBOT_HOME}/logs/flow_conversation/{st.session_state.session_id}.txt", 'a') as file:
+    #             file.write(f"\nMessages sent to '{generation_type}' generation:\n\n")
+    #             for msg in messages:
+    #                 file.write(f"+++{msg['role']}: {msg['content']}\n")
+    #             file.write(f"\n\n")
+    #             dashes = '-' * 20
+    #             file.write(f"{dashes}\n") 
             
-        if log_type == 'general':
-            with open(f"{DEMOBOT_HOME}/logs/flow_conversation/{st.session_state.session_id}.txt", 'a') as file:
-                file.write(f"{messages}\n\n")
-                dashes = '-' * 20
-                file.write(f"{dashes}\n") 
+    #     if log_type == 'general':
+    #         with open(f"{DEMOBOT_HOME}/logs/flow_conversation/{st.session_state.session_id}.txt", 'a') as file:
+    #             file.write(f"{messages}\n\n")
+    #             dashes = '-' * 20
+    #             file.write(f"{dashes}\n") 
 
     def load_sys_prompts(self, prompt_name):
         if prompt_name == 'router':
-            with open(f"{DEMOBOT_HOME}/prompts/internet/sys_prompt_router_LLMNET.json", 'r') as file:
+            with open(f"{st.secrets['DEMO_PATH']}/prompts/internet/sys_prompt_router_LLMNET.json", 'r') as file:
                 prompt = json.load(file)
                 
         if prompt_name == 'chat':
-            with open(f"{DEMOBOT_HOME}/prompts/internet/sys_prompt_chat_LLMNET.json", 'r') as file:
+            with open(f"{st.secrets['DEMO_PATH']}/prompts/internet/sys_prompt_chat_LLMNET.json", 'r') as file:
                 prompt = json.load(file)
                 
         if prompt_name == 'create_query':
-            with open(f"{DEMOBOT_HOME}/prompts/internet/sys_prompt_create_query_LLMNET.json", 'r') as file:
+            with open(f"{st.secrets['DEMO_PATH']}/prompts/internet/sys_prompt_create_query_LLMNET.json", 'r') as file:
                 prompt = json.load(file)
                 
         if prompt_name == 'respond_query':
-            with open(f"{DEMOBOT_HOME}/prompts/internet/sys_prompt_respond_query_LLMNET2.json", 'r') as file:
+            with open(f"{st.secrets['DEMO_PATH']}/prompts/internet/sys_prompt_respond_query_LLMNET2.json", 'r') as file:
                 prompt = json.load(file)
                 
         if prompt_name == 'html_format':
-            with open(f"{DEMOBOT_HOME}/prompts/internet/sys_prompt_html_format_LLMNET.json", 'r') as file:
+            with open(f"{st.secrets['DEMO_PATH']}/prompts/internet/sys_prompt_html_format_LLMNET.json", 'r') as file:
                 prompt = json.load(file)
                 
         if prompt_name == 'color_code':
-            with open(f"{DEMOBOT_HOME}/prompts/internet/sys_prompt_color_code_LLMNET.json", 'r') as file:
+            with open(f"{st.secrets['DEMO_PATH']}/prompts/internet/sys_prompt_color_code_LLMNET.json", 'r') as file:
                 prompt = json.load(file)
                 
         if prompt_name == 'score_websites':
-            with open(f"{DEMOBOT_HOME}/prompts/internet/sys_prompt_source_scorer_LLMNET.json", 'r') as file:
+            with open(f"{st.secrets['DEMO_PATH']}/prompts/internet/sys_prompt_source_scorer_LLMNET.json", 'r') as file:
                 prompt = json.load(file)
 
         return prompt
@@ -172,7 +171,7 @@ class LLMNET:
         if model_type == 'similarity2':
             @st.cache_resource
             def load_similarity_model():
-                model = AutoModel.from_pretrained(self.similarity_model_id2, trust_remote_code=True, cache_dir = "/data1/demobot/hf")
+                model = AutoModel.from_pretrained(self.similarity_model_id2, trust_remote_code=True, cache_dir = st.secrets["CACHE_DIR"])
                 return model
             return load_similarity_model()
         
@@ -207,11 +206,11 @@ class LLMNET:
         headers = {"X-API-Key": YOU_API_KEY}
         params = {"query": query, "num_web_results": 5}
         
-        with open(f"{DEMOBOT_HOME}/logs/flow_conversation/{st.session_state.session_id}.txt", 'a') as file:
-                file.write(f"API_key used: {YOU_API_KEY}\n\n")
-                file.write(f"Query Sent to the search API: {query}\n\n")
-                dashes = '-' * 20
-                file.write(f"{dashes}\n")
+        # with open(f"{DEMOBOT_HOME}/logs/flow_conversation/{st.session_state.session_id}.txt", 'a') as file:
+        #         file.write(f"API_key used: {YOU_API_KEY}\n\n")
+        #         file.write(f"Query Sent to the search API: {query}\n\n")
+        #         dashes = '-' * 20
+        #         file.write(f"{dashes}\n")
                 
         search_results = requests.get(
                             f"https://api.ydc-index.io/search?query={query}",
