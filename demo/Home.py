@@ -1,17 +1,13 @@
 import os
 import streamlit as st
 
-from dotenv import load_dotenv
-load_dotenv()
-DEMOBOT_HOME = os.getenv("DEMOBOT_HOME")
-
 st.set_page_config(
     page_title="AI Retailing Assistant",
     page_icon='💬',
     layout='wide'
 )
 
-with open(os.path.join(DEMOBOT_HOME, "scripts/style.css"), "r") as f:
+with open(os.path.join(st.secrets["DEMO_PATH"], "scripts/style.css"), "r") as f:
     css = f.read()
 
 st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
