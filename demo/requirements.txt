@@ -8,3 +8,4 @@ beautifulsoup4
 transformers
 groq
 pillow
+requests

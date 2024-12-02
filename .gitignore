@@ -13,5 +13,5 @@ local/notebooks
 secrets.toml
 config_server.json
 backup/
-
+notebooks/
 
