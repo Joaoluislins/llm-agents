@@ -27,8 +27,8 @@ st.markdown("""
                 </p>
                         <ul class = 'big-font'>
                             <li>💬&nbsp&nbsp&nbsp&nbsp<b>Generalist</b>: Quantized (4bit) Checkpoint of Llama3 8B model built with Llama.cpp. This checkpoint is not finetuned in any specific dataset, and doesn't perform RAG. It excels in interactive general domain conversations.</li>
-                            <li>🗃️&nbsp&nbsp&nbsp&nbsp<b>Book Retailing Assistant</b>: Multimodal Chatbot tuned to excel in the online retailing assitance domain. This project aims to build an Assistant that interacts with the user, providing personalized product recommendations and operating the retail website cart in order to fully serve the User demands. Uses a custom database to augment (RAG) factualness of it's responses.</li>
-                            <li>🌐&nbsp&nbsp&nbsp&nbsp<b>Web-Assistant</b>: An internet-enabled chatbot capable of searching the web for information, reference it's answers and score the credibility of it's responses. (In Dev.)</li>
+                            <li>🗃️&nbsp&nbsp&nbsp&nbsp<b>Book Retailing Assistant (LLMchat + LLMrouter + RAG)</b>: Multimodal Chatbot tuned to excel in the online retailing assitance domain. This project aims to build an Assistant that interacts with the user, providing personalized product recommendations and operating the retail website cart in order to fully serve the User demands. Uses a custom database to augment (RAG) factualness of it's responses.</li>
+                            <li>🌐&nbsp&nbsp&nbsp&nbsp<b>Web-Assistant (LLMchat + LLMrouter + LLMsearchquery + WebAPI +RAG)</b>: An internet-enabled chatbot capable of searching the web for information, reference it's answers and score the credibility of it's responses. (In Dev.)</li>
                             <li>⭐&nbsp&nbsp&nbsp&nbsp<b>Reinforcing Connection</b>: An implementation of <a href="https://arxiv.org/abs/2203.02155" target="_blank">RLHF</a> tailored with personalized rewards (In Dev.)</li>
                         </ul>
                 <p>
