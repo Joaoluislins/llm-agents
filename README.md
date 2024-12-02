@@ -20,7 +20,7 @@ An internet-enabled chatbot capable of searching the web for information and ref
 
 ## <img src="https://streamlit.io/images/brand/streamlit-mark-color.png" width="40" height="22"> Streamlit App
 To help with the experiments, follows a basic User Interface, a multi-page streamlit app containing all sample chatbot use cases. \
-You can access this app through this link: [link](https://langchain-chatbot.streamlit.app)
+You can access this app through this link: [link](https://llm-agents-projects.streamlit.app/)
 
 ## 🖥️ Running locally
 ```shell
