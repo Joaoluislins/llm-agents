@@ -25,13 +25,10 @@ You can access this app through this link: [link](https://llm-agents-projects.st
 ## 🖥️ Running locally
 ```shell
 # Clone this repository using your terminal
-$ git clone https://github.com/Joaoluislins/demo.git
+$ git clone https://github.com/Joaoluislins/llm-agents.git
 
 # Branch your development
 $ git checkout -b <branch_name>
-# (Optional, push the new branch to the remote repository)
-$ git push -u origin <branch_name>
-
 # Navigate to the repository
 $ cd demo
 # Create a .env file with your environment paths and variables
@@ -46,7 +43,7 @@ $ conda create -n your_new_env_name python=3.10 -y
 $ conda activate your_new_env_name
 # Install the llama.cpp python package or compile it from source, I would suggest the second option to have control over the compilation flags, gpu support and other settable options.
 $ pip install llama-cpp-python
-# Install the other packages through the requirements.txt
+# Install additional required packages
 $ pip install -r requirements.txt
 
 # Finally, you can run the streamlit from your local and start the application
