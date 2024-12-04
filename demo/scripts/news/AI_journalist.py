@@ -10,21 +10,21 @@ import uuid
 import json
 import numpy as np
 
-os.environ['HF_HOME'] = '/data1/demobot/hf'
+# os.environ['HF_HOME'] = '/data1/demobot/hf'
 # Type nvidia-smi in the terminal and choose two GPUs that is not being used, remember that we can only use 0,1,2,3,4
-cuda_llama = 0
-cuda_llava = 4
-os.environ["CUDA_VISIBLE_DEVICES"] = f"{cuda_llama},{cuda_llava}"
-os.environ["TRANSFORMERS_CACHE"] = '/data1/demobot/hf'
+# cuda_llama = 0
+# cuda_llava = 4
+# os.environ["CUDA_VISIBLE_DEVICES"] = f"{cuda_llama},{cuda_llava}"
+# os.environ["TRANSFORMERS_CACHE"] = '/data1/demobot/hf'
 
 import scripts.utils as utils
 import streamlit as st
 
 # import torch
-from huggingface_hub import login
+# from huggingface_hub import login
 from sentence_transformers import SentenceTransformer
 # from sentence_transformers.quantization import quantize_embeddings,semantic_search_usearch
-from llama_cpp import Llama
+# from llama_cpp import Llama
 # from llama_cpp.llama_chat_format import Llama3VisionAlpha
 
 import ast
@@ -32,60 +32,74 @@ import requests
 from PIL import Image
 from io import BytesIO
 import base64
+from groq import Groq
 
-from dotenv import load_dotenv
-load_dotenv()
+# from dotenv import load_dotenv
+# load_dotenv()
 
 #login hf key to use llama models
-HF_TOKEN = os.getenv("HF_TOKEN")
-YOU_API_KEY = os.getenv("YOU_API_KEY")
-login(HF_TOKEN)
+# HF_TOKEN = os.getenv("HF_TOKEN")
+# YOU_API_KEY = os.getenv("YOU_API_KEY")
+# login(HF_TOKEN)
+YOU_API_KEY = st.secrets["YOU_API_KEY"]
 
 class LLM_SETUP:
     def __init__(self):
         self.llama_model_id = "/data1/demobot/hf/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf"
         
+        
     def setup_llm(self, llm_name):
-        if llm_name == 'llama-3':
-            @st.cache_resource
-            def load_llm():
-                llm = Llama(
-                    model_path=self.llama_model_id,
-                    chat_format = 'llama-3',
-                    n_gpu_layers=-1,
-                    device = f"cuda:{cuda_llama}",
-                    verbose = False,
-                    main_gpu = 0,
-                    n_ctx = 0
-                    # seed=1337, # Uncomment to set a specific seed
-                    )
-                return llm
-            return load_llm()
-        else:
-            raise ValueError(f"LLM {llm_name} not found")
-
+    
+    #     if llm_name == 'llama-3':
+    #         @st.cache_resource
+    #         def load_llm():
+    #             llm = Llama(
+    #                 model_path=self.llama_model_id,
+    #                 chat_format = 'llama-3',
+    #                 n_gpu_layers=-1,
+    #                 device = f"cuda:{cuda_llama}",
+    #                 verbose = False,
+    #                 main_gpu = 0,
+    #                 n_ctx = 0
+    #                 # seed=1337, # Uncomment to set a specific seed
+    #                 )
+    #             return llm
+    #         return load_llm()
+    #     else:
+    #         raise ValueError(f"LLM {llm_name} not found")
+        if llm_name == 'groq':
+                @st.cache_resource
+                def load_groq_client():
+                    client = Groq(api_key=st.secrets["GROQ_API_KEY"])
+                    return client
+                return load_groq_client()
+    
 
 
 class AIEditor:
-    def __init__(self, llm):
-        self.cache_dir = '/data1/demobot/hf'
-        self.YOU_API_KEY = os.getenv("YOU_API_KEY")
-        self.DEMOBOT_HOME = os.getenv("DEMOBOT_HOME")
+    def __init__(self, llm, generation_model):
+        # self.cache_dir = '/data1/demobot/hf'
+        self.cache_dir = st.secrets["CACHE_DIR"]
+        # self.YOU_API_KEY = os.getenv("YOU_API_KEY")
+        self.YOU_API_KEY = st.secrets["YOU_API_KEY"]
+        # self.DEMOBOT_HOME = os.getenv("DEMOBOT_HOME")
+        self.DEMO_PATH = st.secrets["DEMO_PATH"]
         self.llm = llm
+        self.generation_model = generation_model
         
         # TODO: define the log file for the editor
-        if not os.path.exists(f"{self.DEMOBOT_HOME}/logs/news/{st.session_state.session_id}/"):
-            os.makedirs(f"{self.DEMOBOT_HOME}/logs/news/{st.session_state.session_id}/")
+        if not os.path.exists(f"{self.DEMO_PATH}/logs/news/{st.session_state.session_id}/"):
+            os.makedirs(f"{self.DEMO_PATH}/logs/news/{st.session_state.session_id}/")
             
-        with open(f"{self.DEMOBOT_HOME}/logs/news/{st.session_state.session_id}/AI_editor.txt", 'w') as file:
-                file.write(f"START\n")
-                dashes = '-' * 20
-                file.write(f"{dashes}\n")
+        # with open(f"{self.DEMOBOT_HOME}/logs/news/{st.session_state.session_id}/AI_editor.txt", 'w') as file:
+        #         file.write(f"START\n")
+        #         dashes = '-' * 20
+        #         file.write(f"{dashes}\n")
                 
     # Load system prompts
     def load_sys_prompts(self, prompt_name):
         if prompt_name == 'AI_editor':
-            with open(f"{self.DEMOBOT_HOME}/prompts/news/sys_prompt_editor.json", 'r') as file:
+            with open(f"{self.DEMO_PATH}/prompts/news/sys_prompt_editor.json", 'r') as file:
                 prompt = json.load(file)
         return prompt
     
@@ -93,27 +107,27 @@ class AIEditor:
         numbered_list = re.findall(r'\d+\.\s+(.+)', input)
         return numbered_list
 
-    def log_writer_AI_editor(self, log_message, log_type):
-        # TODO: change to news logs, conditioning on the type of generation task
-        if log_type == 'messages_sent':
-            with open(f"{self.DEMOBOT_HOME}/logs/news/{st.session_state.session_id}/AI_editor.txt", 'a') as file:
-                for msg in log_message:
-                    file.write(f"+++{msg['role']}: {msg['content']}\n")
-                file.write(f"\n\n")
-                dashes = '-' * 20
-                file.write(f"{dashes}\n\n") 
+    # def log_writer_AI_editor(self, log_message, log_type):
+    #     # TODO: change to news logs, conditioning on the type of generation task
+    #     if log_type == 'messages_sent':
+    #         with open(f"{self.DEMO_PATH}/logs/news/{st.session_state.session_id}/AI_editor.txt", 'a') as file:
+    #             for msg in log_message:
+    #                 file.write(f"+++{msg['role']}: {msg['content']}\n")
+    #             file.write(f"\n\n")
+    #             dashes = '-' * 20
+    #             file.write(f"{dashes}\n\n") 
                 
-        if log_type == 'raw_response':
-            with open(f"{self.DEMOBOT_HOME}/logs/news/{st.session_state.session_id}/AI_editor.txt", 'a') as file:
-                file.write(f"{log_message}\n\n")
-                dashes = '-' * 20
-                file.write(f"{dashes}\n\n") 
+    #     if log_type == 'raw_response':
+    #         with open(f"{self.DEMOBOT_HOME}/logs/news/{st.session_state.session_id}/AI_editor.txt", 'a') as file:
+    #             file.write(f"{log_message}\n\n")
+    #             dashes = '-' * 20
+    #             file.write(f"{dashes}\n\n") 
                 
-        if log_type == 'final_response':
-            with open(f"{self.DEMOBOT_HOME}/logs/news/{st.session_state.session_id}/AI_editor.txt", 'a') as file:
-                file.write(f"{log_message}\n\n")
-                dashes = '-' * 20
-                file.write(f"{dashes}\n\n")  
+    #     if log_type == 'final_response':
+    #         with open(f"{self.DEMOBOT_HOME}/logs/news/{st.session_state.session_id}/AI_editor.txt", 'a') as file:
+    #             file.write(f"{log_message}\n\n")
+    #             dashes = '-' * 20
+    #             file.write(f"{dashes}\n\n")  
                 
     def prepare_messages(self, conversation=None, previous_article=None):
         sys_prompt = self.load_sys_prompts('AI_editor')
@@ -122,14 +136,28 @@ class AIEditor:
         messages = [sys_prompt, user_prompt]
         return messages
     
-    def generate(self,prompts):
-        response = self.llm.create_chat_completion(
-            max_tokens = 256,
-            temperature = 0.2,
-            top_p=0.9,
-            messages = prompts
-            )
-        return response['choices'][0]['message']['content']
+    def generate(self, prompts):
+        if self.generation_model == 'groq':
+            response = self.llm.chat.completions.create(
+                messages=prompts,
+                model="llama-3.1-70b-versatile",
+                temperature=0.3,
+                max_tokens=1024,
+                top_p=1,
+                stop=None,
+                stream=False,)
+            
+            return response.choices[0].message.content
+
+            
+        else:
+            response = self.llm.create_chat_completion(
+                max_tokens = 256,
+                temperature = 0.2,
+                top_p=0.9,
+                messages = prompts
+                )
+            return response['choices'][0]['message']['content']
     
     def format_response(self, response):
         response = re.sub(r'\$', '\$', response)
@@ -140,58 +168,60 @@ class AIEditor:
     
     def prepare_and_generate(self, conversation, previous_article):
         messages = self.prepare_messages(conversation=conversation, previous_article=previous_article)
-        self.log_writer_AI_editor(messages, log_type='messages_sent')
+        # self.log_writer_AI_editor(messages, log_type='messages_sent')
         
         response = self.generate(messages)
-        self.log_writer_AI_editor(response, log_type='raw_response')
+        # self.log_writer_AI_editor(response, log_type='raw_response')
         
         response = self.format_response(response)
-        self.log_writer_AI_editor(response, log_type='final_response')
+        # self.log_writer_AI_editor(response, log_type='final_response')
         return response
     
 # TODO: define generation with internet call for the editor or define a new class (agent) for the investigator
 
 class AIEditorAssistant:
-    def __init__(self, llm):
+    def __init__(self, llm, generation_model):
         self.llm = llm
-        self.DEMOBOT_HOME = os.getenv("DEMOBOT_HOME")
+        # self.DEMOBOT_HOME = os.getenv("DEMOBOT_HOME")
+        self.DEMO_PATH = st.secrets["DEMO_PATH"]
+        self.generation_model = generation_model
         
-        if not os.path.exists(f"{self.DEMOBOT_HOME}/logs/news/{st.session_state.session_id}/AI_editor_assistant/"):
-            os.makedirs(f"{self.DEMOBOT_HOME}/logs/news/{st.session_state.session_id}/AI_editor_assistant/")
+        # if not os.path.exists(f"{self.DEMO_PATH}/logs/news/{st.session_state.session_id}/AI_editor_assistant/"):
+        #     os.makedirs(f"{self.DEMOBOT_HOME}/logs/news/{st.session_state.session_id}/AI_editor_assistant/")
             
-        with open(f"{self.DEMOBOT_HOME}/logs/news/{st.session_state.session_id}/AI_editor_assistant.txt", 'w') as file:
-                file.write(f"START\n")
-                dashes = '-' * 20
-                file.write(f"{dashes}\n")
+        # with open(f"{self.DEMOBOT_HOME}/logs/news/{st.session_state.session_id}/AI_editor_assistant.txt", 'w') as file:
+        #         file.write(f"START\n")
+        #         dashes = '-' * 20
+        #         file.write(f"{dashes}\n")
                 
     def load_sys_prompts(self, prompt_name):
         if prompt_name == 'AI_editor_assistant':
-            with open(f"{self.DEMOBOT_HOME}/prompts/news/sys_prompt_editor_assistant.json", 'r') as file:
+            with open(f"{self.DEMO_PATH}/prompts/news/sys_prompt_editor_assistant.json", 'r') as file:
                 prompt = json.load(file)
         return prompt
     
-    def log_writer_AI_assistant(self, log_message, log_type):
-        with open(f"{self.DEMOBOT_HOME}/logs/news/{st.session_state.session_id}/AI_editor_assistant.txt", 'a') as file:
+    # def log_writer_AI_assistant(self, log_message, log_type):
+    #     with open(f"{self.DEMOBOT_HOME}/logs/news/{st.session_state.session_id}/AI_editor_assistant.txt", 'a') as file:
     
-            if log_type == 'messages_sent':
-                file.write(f"\nMessages sent to generation:\n\n")
-                for msg in log_message:
-                    file.write(f"+++{msg['role']}: {msg['content']}\n")
-                file.write(f"\n\n")
-                dashes = '-' * 20
-                file.write(f"{dashes}\n\n")
+    #         if log_type == 'messages_sent':
+    #             file.write(f"\nMessages sent to generation:\n\n")
+    #             for msg in log_message:
+    #                 file.write(f"+++{msg['role']}: {msg['content']}\n")
+    #             file.write(f"\n\n")
+    #             dashes = '-' * 20
+    #             file.write(f"{dashes}\n\n")
                 
-            if log_type == 'raw_response':
-                file.write(f"\nRaw response from News Assistant:\n\n")
-                file.write(f"{log_message}\n\n")
-                dashes = '-' * 20   
-                file.write(f"{dashes}\n\n")
+    #         if log_type == 'raw_response':
+    #             file.write(f"\nRaw response from News Assistant:\n\n")
+    #             file.write(f"{log_message}\n\n")
+    #             dashes = '-' * 20   
+    #             file.write(f"{dashes}\n\n")
                 
-            if log_type == 'final_response':
-                file.write(f"Final response from News Assistant:\n\n")
-                file.write(f"{log_message}\n\n")
-                dashes = '-' * 20
-                file.write(f"{dashes}\n\n")
+    #         if log_type == 'final_response':
+    #             file.write(f"Final response from News Assistant:\n\n")
+    #             file.write(f"{log_message}\n\n")
+    #             dashes = '-' * 20
+    #             file.write(f"{dashes}\n\n")
     
     # def format_user_sys_prompts(self, conversation, previous_article):
     #     # TODO: The prompt here includes instruction on how to deal with question such as "who created you", artificially pointing to stevens
@@ -214,13 +244,25 @@ class AIEditorAssistant:
         return messages
     
     def generate(self, messages):
-        response = self.llm.create_chat_completion(
-            max_tokens = 256,
+        if self.generation_model == 'groq':
+            response = self.llm.chat.completions.create(
+                messages=messages,
+                model="llama-3.1-70b-versatile",
+                temperature=0.3,
+                max_tokens=1024,
+                top_p=1,
+                stop=None,
+                stream=False,)
+            return response.choices[0].message.content
+            
+        else:
+            response = self.llm.create_chat_completion(
+                max_tokens = 256,
             temperature = 0.2,
             top_p=0.9,
             messages = messages
             )
-        return response['choices'][0]['message']['content']
+            return response['choices'][0]['message']['content']
     
     def format_response(self, response):
         response = re.sub(r'\$', '\$', response)
@@ -232,13 +274,13 @@ class AIEditorAssistant:
     def prepare_and_generate(self, user, previous_article):
         # user_prompt, sys_prompt = self.format_user_sys_prompts(conversation, previous_article) 
         messages = self.messages_builder(user, previous_article)
-        self.log_writer_AI_assistant(messages, log_type='messages_sent')
+        # self.log_writer_AI_assistant(messages, log_type='messages_sent')
         
         response = self.generate(messages)
-        self.log_writer_AI_assistant(response, log_type='raw_response')
+        # self.log_writer_AI_assistant(response, log_type='raw_response')
         
         response = self.format_response(response)
-        self.log_writer_AI_assistant(response, log_type='final_response')
+        # self.log_writer_AI_assistant(response, log_type='final_response')
         return response
     
     

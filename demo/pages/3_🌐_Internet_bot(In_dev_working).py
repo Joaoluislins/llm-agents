@@ -19,7 +19,7 @@ llama_cuda = 0
 # login(HF_TOKEN)
 
 
-st.set_page_config(page_title="Generalist",
+st.set_page_config(page_title="Stevens LLM",
                 page_icon="💬",
                 layout='wide')
 
@@ -41,7 +41,7 @@ st.markdown(
     """, unsafe_allow_html=True
 )
 
-st.header('Generalist')
+st.header('Stevens LLM')
 st.header('\n')
 # st.write("""
 #         <div class="big-font">

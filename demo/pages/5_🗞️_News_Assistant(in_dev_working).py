@@ -6,18 +6,19 @@ from scripts import utils
 # from src.db import DB
 from datetime import datetime
 import pytz
-from dotenv import load_dotenv
-load_dotenv()
+# from dotenv import load_dotenv
+# load_dotenv()
 # TODO: update the code so that the two agents speaks to one another properly and the UI is updated with the conversation
+
 
 # Page configs
 st.set_page_config(page_title="🗞️ News Assistant",
                 page_icon="🗞️",
                 layout='wide')
 
-DEMOBOT_HOME = os.getenv("DEMOBOT_HOME")
+DEMO_PATH = st.secrets["DEMO_PATH"]
 # Loading CSS Style
-with open(os.path.join(DEMOBOT_HOME, "scripts/style.css"), "r") as f:
+with open(os.path.join(DEMO_PATH, "scripts/style.css"), "r") as f:
     css = f.read()
 
 st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
@@ -87,15 +88,16 @@ if "session_id" not in st.session_state:
 if "LLM_SETUP" not in st.session_state:
     LLM_SETUP = LLM_SETUP()
     st.session_state.LLM_SETUP = LLM_SETUP
-    
-llm = st.session_state.LLM_SETUP.setup_llm("llama-3")
-    
+
+generation_model = "groq"
+llm = st.session_state.LLM_SETUP.setup_llm(generation_model)
+
 if "AIEditorAssistant" not in st.session_state:
-    AIEditorAssistant = AIEditorAssistant(llm)
+    AIEditorAssistant = AIEditorAssistant(llm = llm, generation_model = generation_model)
     st.session_state.AIEditorAssistant = AIEditorAssistant
     
 if "AIEditor" not in st.session_state:
-    AIEditor = AIEditor(llm)
+    AIEditor = AIEditor(llm = llm, generation_model = generation_model)
     st.session_state.AIEditor = AIEditor
     
 if "article_content" not in st.session_state:
