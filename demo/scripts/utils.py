@@ -64,7 +64,7 @@ def enable_chat_history_pure(bot_name='generalist'):
                 content = msg['content']
                 with st.chat_message(role):
                     if bot_name == 'generalist':
-                        st.chat_message(role).write(content)
+                        st.write(role).write(content)
                     else:
                         st.markdown(f"<ol>{content}</ol>", unsafe_allow_html=True)
 
