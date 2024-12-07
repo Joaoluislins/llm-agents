@@ -34,7 +34,7 @@ def enable_chat_history(func):
     return execute
 
 
-def enable_chat_history_pure(func):
+def enable_chat_history_pure(func, bot_name = 'generalist'):
     # to clear chat history after swtching chatbot
     current_page = func.__qualname__
     if "current_page" not in st.session_state:
@@ -52,13 +52,21 @@ def enable_chat_history_pure(func):
     
     # this part shows messages in the ui at every turn
     if "messages" not in st.session_state:
-        st.session_state["messages"] = [{"role": "assistant", "content": "How can I help you?", 'fig': None}]
+        if bot_name == 'generalist':
+            st.session_state["messages"] = [{"role": "assistant", "content": "Hello! How can I help you?"}]
+        else:
+            st.session_state["messages"] = [{"role": "assistant", "content": "Hello! How can I help you?", 'fig': None}]
         
     for msg in st.session_state["messages"]:
         role = msg['role']
+        content = msg['content']
         with st.chat_message(role):
-            st.markdown(f"<ol>{msg['content']}</ol>", unsafe_allow_html=True)
-        # st.chat_message(msg["role"]).write(msg["content"])
+            if bot_name == 'generalist':
+                st.chat_message(role).write(content)
+            else:
+                st.markdown(f"<ol>{content}</ol>", unsafe_allow_html=True)
+                
+        
         
     def execute(*args, **kwargs):
         func(*args, **kwargs)

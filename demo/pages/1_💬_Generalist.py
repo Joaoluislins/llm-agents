@@ -21,16 +21,6 @@ with open(os.path.join(st.secrets["DEMO_PATH"], "scripts/style.css"), "r") as f:
 
 st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
 
-# st.markdown(
-#     """
-#     <style>
-#     [data-testid="stChatMessageContent"] p{
-#         font-size: 1.3rem;
-#     }
-#     </style>
-#     """, unsafe_allow_html=True
-# )
-
 st.header('Generalist')
 st.header('\n')
 
@@ -87,33 +77,31 @@ class PureLLM:
             return user_prompt, sys_prompt
         
     def messages_builder(self, sys_prompt, user_prompt, generation_type):
-        ### types
-        # chat -> have all conversation context
-        messages = [sys_prompt]
-
-        if generation_type == 'chat':
-
-            for msg in st.session_state["messages"]:
-                messages.append({
-                                 'role': msg['role'],
-                                 'content': msg['content']
-                                 })
+        """
+        Builds the message history for the chat conversation.
+        
+        Args:
+            sys_prompt (dict): System prompt that sets the context/behavior
+            user_prompt (dict): Current user message
+            generation_type (str): Type of generation (e.g. 'chat')
             
-            # case of not first message
-            if messages[-1]['role'] == 'user':
-                messages[-1] = user_prompt            
-            # first message case
+        Returns:
+            list: List of message dictionaries containing the conversation history
+        """
+        # Initialize with system prompt
+        messages = [sys_prompt]
+        
+        if generation_type == 'chat':
+            # Add conversation history
+            messages.extend(st.session_state["messages"])
+            # Handle the user prompt
+            if messages and messages[-1]['role'] == 'user':
+                # Replace last message if it was from user
+                messages[-1] = user_prompt
             else:
+                # Add new user message
                 messages.append(user_prompt)
-
-        # with open(f"{DEMOBOT_HOME}/logs/flow_conversation/{st.session_state.session_id}.txt", 'a') as file:
-            # file.write(f"\nMessages sent to '{type}' generation:\n\n")
-            # for msg in messages:
-            #     file.write(f"+++{msg['role']}: {msg['content']}\n")
-            # file.write(f"\n\n")
-            # dashes = '-' * 20
-            # file.write(f"{dashes}\n") 
-
+                
         return messages
     
     def generate(self, messages):
@@ -153,7 +141,7 @@ class PureLLM:
         return response
 
 
-    @utils.enable_chat_history_pure
+    @utils.enable_chat_history_pure(bot_name = 'generalist')
     def main(self):
         user = st.chat_input(placeholder="Ask me anything!")
         if user:
