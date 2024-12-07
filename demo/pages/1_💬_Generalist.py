@@ -21,15 +21,15 @@ with open(os.path.join(st.secrets["DEMO_PATH"], "scripts/style.css"), "r") as f:
 
 st.markdown(f"<style>{css}</style>", unsafe_allow_html=True)
 
-st.markdown(
-    """
-    <style>
-    [data-testid="stChatMessageContent"] p{
-        font-size: 1.3rem;
-    }
-    </style>
-    """, unsafe_allow_html=True
-)
+# st.markdown(
+#     """
+#     <style>
+#     [data-testid="stChatMessageContent"] p{
+#         font-size: 1.3rem;
+#     }
+#     </style>
+#     """, unsafe_allow_html=True
+# )
 
 st.header('Generalist')
 st.header('\n')
