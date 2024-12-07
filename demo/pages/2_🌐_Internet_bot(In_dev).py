@@ -732,7 +732,7 @@ class LLMNET:
         return formatted_response
     
     
-    @utils.enable_chat_history_pure
+    @utils.enable_chat_history_pure(bot_name = 'internet')
     def main(self):
         """
         Main function to run the chatbot.
