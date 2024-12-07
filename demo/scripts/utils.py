@@ -34,7 +34,7 @@ import streamlit as st
 #     return execute
 
 
-def enable_chat_history_pure(bot_name='generalist'):
+def enable_chat_history_pure(bot_name='internet'):
     def decorator(func):
         def execute(*args, **kwargs):
             # add current page to session state
