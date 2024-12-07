@@ -41,22 +41,11 @@ from PIL import Image
 from io import BytesIO
 import base64
 
-# from dotenv import load_dotenv
-# load_dotenv()
-
-
-#login hf key to use llama models
-# HF_TOKEN = os.getenv("HF_TOKEN")
-# YOU_API_KEY = os.getenv("YOU_API_KEY")
-# login(HF_TOKEN)
-
 # Page configs
 st.set_page_config(page_title="🌐 Internet Bot",
                 page_icon="💬",
                 layout='wide')
 
-# DEMOBOT_HOME = os.getenv("DEMOBOT_HOME")
-# Loading CSS Style
 with open(os.path.join(st.secrets["DEMO_PATH"], "scripts/style.css"), "r") as f:
     css = f.read()
 

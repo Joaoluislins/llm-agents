@@ -68,6 +68,7 @@ def enable_chat_history_pure(bot_name='internet'):
                     if bot_name == 'generalist':
                         st.write(content)
                     else:
+                        print(content)
                         st.markdown(f"<ol>{content}</ol>", unsafe_allow_html=True)
 
             return func(*args, **kwargs)
