@@ -14,4 +14,7 @@ secrets.toml
 config_server.json
 backup/
 notebooks/
+data_index.py
+streaming.py
+crawler_stevers.py
 

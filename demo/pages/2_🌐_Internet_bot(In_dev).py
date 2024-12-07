@@ -416,7 +416,7 @@ class LLMNET:
         elif self.generation_model == 'groq':
             chat_completion = llm.chat.completions.create(
                 messages=messages,
-                model="llama-3.1-70b-versatile",
+                model="llama-3.3-70b-versatile",
                 temperature=0.3,
                 max_tokens=1024,
                 top_p=1,

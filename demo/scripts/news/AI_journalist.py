@@ -140,7 +140,7 @@ class AIEditor:
         if self.generation_model == 'groq':
             response = self.llm.chat.completions.create(
                 messages=prompts,
-                model="llama-3.1-70b-versatile",
+                model="llama-3.3-70b-versatile",
                 temperature=0.3,
                 max_tokens=1024,
                 top_p=1,
@@ -247,7 +247,7 @@ class AIEditorAssistant:
         if self.generation_model == 'groq':
             response = self.llm.chat.completions.create(
                 messages=messages,
-                model="llama-3.1-70b-versatile",
+                model="llama-3.3-70b-versatile",
                 temperature=0.3,
                 max_tokens=1024,
                 top_p=1,
