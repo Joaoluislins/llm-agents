@@ -10,7 +10,7 @@ from groq import Groq
 
 # os.environ['HF_HOME'] = '/data1/demobot/hf'
 # Type nvidia-smi in the terminal and choose one GPU that is not being used, remember that we can only use 0,1,2,3,4
-llama_cuda = 0
+# llama_cuda = 0
 # os.environ["CUDA_VISIBLE_DEVICES"] = "{llama_cuda}"
 # os.environ["TRANSFORMERS_CACHE"] = '/data1/demobot/hf'
 
@@ -43,6 +43,7 @@ st.markdown(
 
 st.header('Generalist')
 st.header('\n')
+
 # st.write("""
 #         <div class="big-font">
 #             <p>
@@ -96,7 +97,7 @@ class PureLLM:
         
     def load_sys_prompts(self, prompt_name):
         if prompt_name == 'chat':
-            with open(os.path.join(st.secrets["DEMO_PATH"], "prompts/books/sys_prompt_chat_pure.json"), 'r') as file:
+            with open(os.path.join(st.secrets["DEMO_PATH"], "prompts/simple_chat/sys_prompt_chat_pure.json"), 'r') as file:
                 prompt = json.load(file)
         return prompt
     
