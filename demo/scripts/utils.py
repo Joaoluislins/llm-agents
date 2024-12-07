@@ -34,43 +34,43 @@ def enable_chat_history(func):
     return execute
 
 
-def enable_chat_history_pure(func, bot_name = 'generalist'):
-    # to clear chat history after swtching chatbot
-    current_page = func.__qualname__
-    if "current_page" not in st.session_state:
-        st.session_state["current_page"] = current_page
-    
-    if st.session_state["current_page"] != current_page:
-        try:
-            st.cache_resource.clear()
-            del st.session_state["current_page"]
-            del st.session_state["messages"]
-            del st.session_state['model']
-            del st.session_state['obj']
-        except:
-            pass
-    
-    # this part shows messages in the ui at every turn
-    if "messages" not in st.session_state:
-        if bot_name == 'generalist':
-            st.session_state["messages"] = [{"role": "assistant", "content": "Hello! How can I help you?"}]
-        else:
-            st.session_state["messages"] = [{"role": "assistant", "content": "Hello! How can I help you?", 'fig': None}]
-        
-    for msg in st.session_state["messages"]:
-        role = msg['role']
-        content = msg['content']
-        with st.chat_message(role):
-            if bot_name == 'generalist':
-                st.chat_message(role).write(content)
-            else:
-                st.markdown(f"<ol>{content}</ol>", unsafe_allow_html=True)
-                
-        
-        
-    def execute(*args, **kwargs):
-        func(*args, **kwargs)
-    return execute
+def enable_chat_history_pure(bot_name='generalist'):
+    def decorator(func):
+        def execute(*args, **kwargs):
+            # to clear chat history after switching chatbot
+            current_page = func.__qualname__
+            if "current_page" not in st.session_state:
+                st.session_state["current_page"] = current_page
+
+            if st.session_state["current_page"] != current_page:
+                try:
+                    st.cache_resource.clear()
+                    del st.session_state["current_page"]
+                    del st.session_state["messages"]
+                    del st.session_state['model']
+                    del st.session_state['obj']
+                except:
+                    pass
+
+            # this part shows messages in the UI at every turn
+            if "messages" not in st.session_state:
+                if bot_name == 'generalist':
+                    st.session_state["messages"] = [{"role": "assistant", "content": "Hello! How can I help you?"}]
+                else:
+                    st.session_state["messages"] = [{"role": "assistant", "content": "Hello! How can I help you?", 'fig': None}]
+
+            for msg in st.session_state["messages"]:
+                role = msg['role']
+                content = msg['content']
+                with st.chat_message(role):
+                    if bot_name == 'generalist':
+                        st.chat_message(role).write(content)
+                    else:
+                        st.markdown(f"<ol>{content}</ol>", unsafe_allow_html=True)
+
+            return func(*args, **kwargs)
+        return execute
+    return decorator
 
 def enable_chat_history_news(func):
     st.markdown("""
