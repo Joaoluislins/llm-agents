@@ -1,3 +1,8 @@
+#TODO: add logging
+#TODO: add error handling
+#TODO: add streaming feature
+
+
 import os
 import streamlit as st
 import uuid
@@ -6,26 +11,11 @@ import json
 
 import scripts.utils as utils
 from groq import Groq
-# from llama_cpp import Llama
-
-# os.environ['HF_HOME'] = '/data1/demobot/hf'
-# Type nvidia-smi in the terminal and choose one GPU that is not being used, remember that we can only use 0,1,2,3,4
-# llama_cuda = 0
-# os.environ["CUDA_VISIBLE_DEVICES"] = "{llama_cuda}"
-# os.environ["TRANSFORMERS_CACHE"] = '/data1/demobot/hf'
-
-# from huggingface_hub import login
-# HF_TOKEN = os.getenv("HF_TOKEN")
-# login(HF_TOKEN)
-
 
 st.set_page_config(page_title="Generalist",
                 page_icon="💬",
                 layout='wide')
 
-# DEMOBOT_HOME = os.getenv("DEMOBOT_HOME")
-# "/home/jlinsrod/projects/ebay/demo/scripts/style.css"
-# Loading CSS Style
 with open(os.path.join(st.secrets["DEMO_PATH"], "scripts/style.css"), "r") as f:
     css = f.read()
 
@@ -54,21 +44,10 @@ st.header('\n')
 
 class PureLLM:
     def __init__(self, generation_model):
-        self.model_id = "/data1/demobot/hf/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf"
-        self.conversation = ''
-        self.cache_dir = '/data1/demobot/hf'
-        self.chat_history = ''
-        self.sys_prompt_chat = self.load_sys_prompts('chat')
-        self.messages = []
+        # self.model_id = "/data1/demobot/hf/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf"
+        self.cache_dir = os.path.join(st.secrets["DEMO_PATH"], 'hf')
         self.generation_model = generation_model
-        
-        # if not os.path.exists(f"{DEMOBOT_HOME}/logs/flow_conversation/"):
-        #     os.makedirs(f"{DEMOBOT_HOME}/logs/flow_conversation/")
-            
-        # with open(f"{DEMOBOT_HOME}/logs/flow_conversation/{st.session_state.session_id}.txt", 'w') as file:
-        #         file.write(f"START\n")
-        #         dashes = '-' * 20
-        #         file.write(f"{dashes}\n") 
+        # TODO start log session
                 
     def setup_model(self, model_type):
         # if model_type == 'llama':
@@ -82,7 +61,7 @@ class PureLLM:
             #         verbose = False,
             #         main_gpu = 0,
             #         n_ctx = 0
-            #         # seed=1337, # Uncomment to set a specific seed
+            #         # seed=1337,
             #         )
                 # return llm
             # return load_llama()
@@ -101,18 +80,18 @@ class PureLLM:
                 prompt = json.load(file)
         return prompt
     
-    def format_user_sys_prompts(self, user, type):
-        if type == 'chat':
+    def format_user_sys_prompts(self, user, generation_type):
+        if generation_type == 'chat':
             user_prompt = {"role": "user", "content": f"{user}"}
             sys_prompt = self.load_sys_prompts('chat')
             return user_prompt, sys_prompt
         
-    def messages_builder(self, sys_prompt, user_prompt, type):
+    def messages_builder(self, sys_prompt, user_prompt, generation_type):
         ### types
         # chat -> have all conversation context
         messages = [sys_prompt]
 
-        if type == 'chat':
+        if generation_type == 'chat':
 
             for msg in st.session_state["messages"]:
                 messages.append({
@@ -166,40 +145,28 @@ class PureLLM:
         else:
             return response
         
-    def chatLlama3(self, user):
-        ### general chat
-        # format chat prompts
-        user_prompt_chat, sys_prompt_chat = self.format_user_sys_prompts(user, type = 'chat')
-        # messages to be included
-        messages_chat = self.messages_builder(sys_prompt_chat, user_prompt_chat, type = 'chat')
-        chat_response = self.generate(messages_chat)
-        chat_response = self.format_response(chat_response)
-        # with open(f"{DEMOBOT_HOME}/logs/flow_conversation/{st.session_state.session_id}.txt", 'a') as file:
-        #     file.write(f"chat response: {chat_response}\n")
-        #     dashes = '-' * 20
-        #     file.write(f"{dashes}\n") 
-        # TODO include the response in the chat history document
-        return chat_response
+    def prepare_and_generate(self, user, generation_type):
+        user_prompt, sys_prompt = self.format_user_sys_prompts(user, generation_type = generation_type)
+        messages = self.messages_builder(sys_prompt, user_prompt, generation_type = generation_type)        
+        response = self.generate(messages)        
+        response = self.format_response(response)
+        return response
 
-        
+
     @utils.enable_chat_history_pure
     def main(self):
         user = st.chat_input(placeholder="Ask me anything!")
         if user:
             utils.display_msg(user, 'user')
             with st.chat_message("assistant"):
-
-                # with open(f"{DEMOBOT_HOME}/logs/flow_conversation/{st.session_state.session_id}.txt", 'a') as file:
-                #     file.write(f"User New Input: {user}\n")
-                #     dashes = '-' * 20
-                #     file.write(f"{dashes}\n") 
-
-                response = self.chatLlama3(user)
+                
+                response = self.prepare_and_generate(user, generation_type = 'chat')
                 st.write(response)
-
                 st.session_state.messages.append({"role": "assistant",
                                                   "content": response,
                                                 })
+                
+                
 generation_model = 'groq'
 
 if "session_id" not in st.session_state:
