@@ -3,6 +3,10 @@ import json
 import re
 import streamlit as st
 from groq import Groq
+from pixabayAPI import PixabayImageSearch
+
+PIXABAY_API_KEY = st.secrets["PIXABAY_API_KEY"]
+DEMO_PATH = st.secrets["DEMO_PATH"]
 
 class MediaLLM:
     def __init__(self, llm, generation_model):
@@ -12,7 +16,7 @@ class MediaLLM:
         
     def load_sys_prompts(self, prompt_name):
         if prompt_name == 'chat':
-            with open(os.path.join(st.secrets["DEMO_PATH"], "prompts/simple_chat/sys_prompt_chat_pure.json"), 'r') as file:
+            with open(os.path.join(DEMO_PATH, "prompts/simple_chat/sys_prompt_chat_pure.json"), 'r') as file:
                 prompt = json.load(file)
         return prompt
     
@@ -91,3 +95,17 @@ class MediaLLM:
         response = self.generate(messages)        
         response = self.format_response(response)
         return response
+    
+    def search_media(self, query):
+        pixabay = PixabayImageSearch(PIXABAY_API_KEY)
+        images = pixabay.search_images(query)
+        videos = pixabay.search_videos(query)
+        return images, videos
+    
+    def GlobalHandler(self, user):
+        search_query = self.prepare_and_generate(user, generation_type = 'create_query')
+        images, videos = self.search_media(search_query)
+        media = {'images': images, 'videos': videos, 'search_query': search_query}
+        
+        response = self.prepare_and_generate(user, generation_type = 'chat')
+        return response, media

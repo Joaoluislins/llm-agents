@@ -40,11 +40,20 @@ def main():
     if user:
         utils.display_msg(user, 'user')
         with st.chat_message("assistant"):
-            response = st.session_state.MediaLLM.prepare_and_generate(user, generation_type = 'chat')
+            # Start global handler to get response and media
+            response, media = st.session_state.MediaLLM.GlobalHandler(user)
+            
+            if media['videos']:
+                st.video(media['videos'][0])
+            elif media['images']:
+                st.image(media['images'][0])
+                
             st.write(response)
             st.session_state.messages.append({"role": "assistant",
                                               "content": response,
+                                              "media": media,
                                             })
+            
 if "session_id" not in st.session_state:
     st.session_state.session_id = str(uuid.uuid4())
     

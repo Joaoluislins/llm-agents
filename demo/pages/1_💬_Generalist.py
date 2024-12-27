@@ -147,7 +147,6 @@ class PureLLM:
         if user:
             utils.display_msg(user, 'user')
             with st.chat_message("assistant"):
-                
                 response = self.prepare_and_generate(user, generation_type = 'chat')
                 st.write(response)
                 st.session_state.messages.append({"role": "assistant",
