@@ -39,7 +39,13 @@ class MediaLLM:
         
         if generation_type == 'chat':
             # Add conversation history
-            messages.extend(st.session_state["messages"])
+            # Add last 50 messages from history, keeping only role and content
+            for msg in st.session_state["messages"][-50:]:
+                messages.append({
+                    'role': msg['role'],
+                    'content': msg['content']
+                })
+            
             # Handle the user prompt
             if messages and messages[-1]['role'] == 'user':
                 # Replace last message if it was from user
