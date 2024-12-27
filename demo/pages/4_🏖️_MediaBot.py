@@ -48,7 +48,7 @@ def main():
             
             with col1:
                 # Make the text scrollable
-                st.text_area("Conversation", value=response, height=300, max_chars=None, key=None)
+                st.write(response)
             
             with col2:
                 # Display media in a fixed window
