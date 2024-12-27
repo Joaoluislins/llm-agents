@@ -5,36 +5,10 @@ import streamlit as st
 from groq import Groq
 
 class MediaLLM:
-    def __init__(self, generation_model):
-        # self.model_id = "/data1/demobot/hf/Meta-Llama-3-8B-Instruct-Q4_K_M.gguf"
-        self.cache_dir = os.path.join(st.secrets["DEMO_PATH"], 'hf')
+    def __init__(self, llm, generation_model):
+        self.llm = llm
         self.generation_model = generation_model
         # TODO start log session
-                
-    def setup_model(self, model_type):
-        # if model_type == 'llama':
-        #     @st.cache_resource
-            # def load_llama():
-            #     llm = Llama(
-            #         model_path=self.model_id,
-            #         chat_format = 'llama-3',
-            #         n_gpu_layers=-1,
-            #         device = f"cuda:{llama_cuda}",
-            #         verbose = False,
-            #         main_gpu = 0,
-            #         n_ctx = 0
-            #         # seed=1337,
-            #         )
-                # return llm
-            # return load_llama()
-        
-        if model_type == 'groq':
-            @st.cache_resource
-            def load_groq_client():
-                client = Groq(api_key=st.secrets["GROQ_API_KEY"])
-                return client
-            return load_groq_client()
-        
         
     def load_sys_prompts(self, prompt_name):
         if prompt_name == 'chat':
@@ -78,7 +52,7 @@ class MediaLLM:
     
     def generate(self, messages):
         if self.generation_model == 'llama-local':
-            response = llm.create_chat_completion(
+            response = self.llm.create_chat_completion(
                 max_tokens = 256,
                 temperature = 0.2,
                 top_p=0.9,
@@ -87,7 +61,7 @@ class MediaLLM:
             return response['choices'][0]['message']['content']
         
         elif self.generation_model == 'groq':
-            chat_completion = llm.chat.completions.create(
+            chat_completion = self.llm.chat.completions.create(
                 messages=messages,
                 model="llama-3.3-70b-versatile",
                 temperature=0.3,

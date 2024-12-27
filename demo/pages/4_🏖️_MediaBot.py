@@ -12,6 +12,7 @@ import json
 import scripts.utils as utils
 from groq import Groq
 from scripts.mediaBot.mediaLLM import MediaLLM
+from scripts.model_setup import LLM_SETUP
 
 st.set_page_config(page_title="MediaBot",
                 page_icon="🏖️",
@@ -44,16 +45,18 @@ def main():
             st.session_state.messages.append({"role": "assistant",
                                               "content": response,
                                             })
-
-
-generation_model = 'groq'
-
 if "session_id" not in st.session_state:
     st.session_state.session_id = str(uuid.uuid4())
     
+if "LLM_SETUP" not in st.session_state:
+    LLM_SETUP = LLM_SETUP()
+    st.session_state.LLM_SETUP = LLM_SETUP
+
+generation_model = 'groq'
+llm = st.session_state.LLM_SETUP.setup_llm(generation_model)
+    
 if "MediaLLM" not in st.session_state:
-    MediaLLM = MediaLLM(generation_model)
+    MediaLLM = MediaLLM(llm = llm, generation_model = generation_model)
     st.session_state.MediaLLM = MediaLLM
 
-llm = st.session_state.MediaLLM.setup_model(generation_model)
-st.session_state.MediaLLM.main()
+main()
