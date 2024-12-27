@@ -1,38 +1,23 @@
 ### properly format the code
 ### solve bug of diff dimensions in the retrieved snippets vs sentences similarities
 ### solve bug when retrieving thumbnail metadata
-# solve bug for second turn chatonwards
 ### consolidate model selection in UI and save variables
-### split response in two, one to apply the rag while referencing, big models can do this, and then another to apply css styling, can be a fast model.
 
 import os
-# os.environ['HF_HOME'] = '/data1/demobot/hf'
-# Type nvidia-smi in the terminal and choose two GPUs that is not being used, remember that we can only use 0,1,2,3,4
-# cuda_llama = 0
-# cuda_llava = 4
-# os.environ["CUDA_VISIBLE_DEVICES"] = f"{cuda_llama},{cuda_llava}"
-# os.environ["TRANSFORMERS_CACHE"] = '/data1/demobot/hf'
 import uuid
 import re
 import json
 import numpy as np
 import requests
 from bs4 import BeautifulSoup
-import torch
 import torch.nn.functional as F
 from transformers import AutoTokenizer, AutoModel
 import http.client
 http.client._MAXHEADERS = 1000
-
 import scripts.utils as utils
 import streamlit as st
-
-# import torch
-# from huggingface_hub import login
 from sentence_transformers import SentenceTransformer
-# from sentence_transformers.quantization import quantize_embeddings,semantic_search_usearch
-# from llama_cpp import Llama
-# from llama_cpp.llama_chat_format import Llama3VisionAlpha
+
 from groq import Groq
 
 import ast
