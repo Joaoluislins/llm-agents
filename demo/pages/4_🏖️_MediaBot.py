@@ -41,7 +41,6 @@ def main():
         utils.display_msg(user, 'user')
         with st.chat_message("assistant"):
             # Start global handler to get response and media
-            print(st.session_state.MediaLLM.generation_model)
             response, media = st.session_state.MediaLLM.GlobalHandler(user)
             
             if media['videos']:

@@ -18,12 +18,23 @@ class MediaLLM:
         if prompt_name == 'chat':
             with open(os.path.join(DEMO_PATH, "prompts/simple_chat/sys_prompt_chat_pure.json"), 'r') as file:
                 prompt = json.load(file)
+        elif prompt_name == 'create_query':
+            with open(os.path.join(DEMO_PATH, "prompts/internet/sys_prompt_create_query_LLMNET.json"), 'r') as file:
+                prompt = json.load(file)
+        
         return prompt
+    
+    
     
     def format_user_sys_prompts(self, user, generation_type):
         if generation_type == 'chat':
             user_prompt = {"role": "user", "content": f"{user}"}
             sys_prompt = self.load_sys_prompts('chat')
+            return user_prompt, sys_prompt
+        
+        elif generation_type == 'create_query':
+            user_prompt = {"role": "user", "content": f"{user}"}
+            sys_prompt = self.load_sys_prompts('create_query')
             return user_prompt, sys_prompt
         
     def messages_builder(self, sys_prompt, user_prompt, generation_type):
