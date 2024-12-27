@@ -19,7 +19,7 @@ class MediaLLM:
             with open(os.path.join(DEMO_PATH, "prompts/simple_chat/sys_prompt_chat_pure.json"), 'r') as file:
                 prompt = json.load(file)
         elif prompt_name == 'create_query':
-            with open(os.path.join(DEMO_PATH, "prompts/internet/sys_prompt_create_query_LLMNET.json"), 'r') as file:
+            with open(os.path.join(DEMO_PATH, "prompts/mediaBot/sys_prompt_create_query_MediaLLM.json"), 'r') as file:
                 prompt = json.load(file)
         
         return prompt
@@ -52,7 +52,7 @@ class MediaLLM:
         # Initialize with system prompt
         messages = [sys_prompt]
         
-        if generation_type == 'chat':
+        if generation_type == 'chat' or generation_type == 'create_query':
             # Add conversation history
             # Add last 50 messages from history, keeping only role and content
             for msg in st.session_state["messages"][-50:]:
@@ -68,6 +68,7 @@ class MediaLLM:
             else:
                 # Add new user message
                 messages.append(user_prompt)
+                
                 
         return messages
     
@@ -93,10 +94,13 @@ class MediaLLM:
             
             return chat_completion.choices[0].message.content
     
-    def format_response(self, response):
+    #TODO: this is a temporary solution, I need to implement a better regex to format the response
+    def format_response(self, response, generation_type = 'chat'):
         response =re.sub(r'\$', '\$', response)
         if response.startswith('Assistant') or response.startswith('assistant'):
             return response[len('Assistant: '): ]
+        elif response.startswith('search query: ') or response.startswith('search query') or response.startswith('Search Query:') :
+            return response[len('search query: '): ]
         else:
             return response
         

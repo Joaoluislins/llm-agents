@@ -43,12 +43,21 @@ def main():
             # Start global handler to get response and media
             response, media = st.session_state.MediaLLM.GlobalHandler(user)
             
-            if media['videos']:
-                st.video(media['videos'][0])
-            elif media['images']:
-                st.image(media['images'][0])
-                
-            st.write(response)
+            # Create two columns: one for text and one for media
+            col1, col2 = st.columns([3, 1])  # Adjust the ratio as needed
+            
+            with col1:
+                # Make the text scrollable
+                st.text_area("Conversation", value=response, height=300, max_chars=None, key=None)
+            
+            with col2:
+                # Display media in a fixed window
+                if media['videos']:
+                    st.video(media['videos'][0], autoplay=True, loop=True)
+                elif media['images']:
+                    st.image(media['images'][0])
+            
+            # Append the message to the session state
             st.session_state.messages.append({"role": "assistant",
                                               "content": response,
                                               "media": media,
