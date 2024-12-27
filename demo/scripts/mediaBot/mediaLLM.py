@@ -119,6 +119,7 @@ class MediaLLM:
     
     def GlobalHandler(self, user):
         search_query = self.prepare_and_generate(user, generation_type = 'create_query')
+        print(search_query)
         images, videos = self.search_media(search_query)
         media = {'images': images, 'videos': videos, 'search_query': search_query}
         
