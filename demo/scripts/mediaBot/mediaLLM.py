@@ -3,7 +3,7 @@ import json
 import re
 import streamlit as st
 from groq import Groq
-from pixabayAPI import PixabayImageSearch
+from scripts.mediaBot.pixabayAPI import PixabayImageSearch
 
 PIXABAY_API_KEY = st.secrets["PIXABAY_API_KEY"]
 DEMO_PATH = st.secrets["DEMO_PATH"]
