@@ -50,6 +50,7 @@ def main():
                 # Make the text scrollable
                 st.write(response)
             
+            print(media)
             with col2:
                 # Display media in a fixed window
                 if media['videos']:
